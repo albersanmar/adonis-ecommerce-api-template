@@ -12,6 +12,7 @@ export default class UserSeeder extends BaseSeeder {
         name: 'Administrador',
         email: 'admin@vortexdevops.com',
         password: 'AdminAdmin',
+        phone: '1231231212',
         confirm: true,
         createdAt: DateTime.utc(),
         updatedAt: DateTime.utc(),

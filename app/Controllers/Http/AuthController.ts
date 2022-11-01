@@ -96,25 +96,24 @@ export default class AuthController {
             });
             return;
         }
-        const users = await User.query().where("email", email);
-        if (users.length === 0) {
-            response.badRequest({
-                code: "INVALID_CREDENTIALS",
+        const user = await User.query()
+            .where("email", email)
+            .first()
+        if (!user) {
+            return response.badRequest({
+                code: "NOT_FOUND",
                 message: "El usuario no existe",
-            });
-            return;
-        } else if (users[0].confirm !== true) {
-            response.badRequest({
+            })
+        } else if (!user.confirm) {
+            return response.badRequest({
                 code: "USER_NOT_CONFIRMED",
                 message: "El usuario no ha sido confirmado",
-            });
-            return;
-        } else if (users[0].blocked === true) {
-            response.badRequest({
+            })
+        } else if (user.blocked) {
+            return response.badRequest({
                 code: "USER_BLOCKED",
                 message: "Usuario bloqueado",
-            });
-            return;
+            })
         }
         try {
             const token = await auth.use("api").attempt(email, password);

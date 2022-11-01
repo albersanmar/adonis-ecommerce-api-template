@@ -24,27 +24,30 @@ export default class User extends BaseModel {
   public password: string
 
   @column()
+  public phone: string
+
+  @column({ serializeAs: null })
   public rememberMeToken?: string
 
-  @column()
+  @column({ serializeAs: null })
   public confirmToken?: string
 
-  @column()
+  @column({ serializeAs: null })
   public recoverToken?: string
 
-  @column()
+  @column({ serializeAs: null })
   public confirm?: boolean
 
-  @column()
+  @column({ serializeAs: null })
   public blocked?: boolean
 
   @column({ serializeAs: 'userTypeId' })
   public userTypeId?: string
 
-  @column.dateTime({ autoCreate: true })
+  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
   public updatedAt: DateTime
 
   @belongsTo(() => UserType)

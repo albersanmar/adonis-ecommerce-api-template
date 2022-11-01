@@ -5,8 +5,7 @@ export default class Users extends BaseSchema {
 
   public async up() {
     this.schema.table(this.tableName, (table) => {
-      table.string('name').nullable()
-      table.uuid('user_type_id').references('id').inTable('user_types').onDelete('CASCADE')
+      table.uuid('user_type_id').references('id').inTable('user_types').onDelete('SET NULL')
     })
   }
 }
