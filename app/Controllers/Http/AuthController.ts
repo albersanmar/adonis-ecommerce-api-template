@@ -3,7 +3,6 @@
 import Env from "@ioc:Adonis/Core/Env";
 
 import User from "App/Models/User";
-import UserType from "App/Models/UserType";
 
 import { v1 as uuidv1 } from "uuid";
 
