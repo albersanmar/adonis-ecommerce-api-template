@@ -10,7 +10,7 @@ export default class User {
     )
       return response.badRequest({
         code: "NOT_HAVE_PERMISSION",
-        message: "No tiene permiso para hacer esta operación",
+        message: "No tiene permisos para hacer esta operación",
       })
     await next()
   }

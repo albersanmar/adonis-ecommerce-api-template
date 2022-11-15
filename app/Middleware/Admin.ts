@@ -6,7 +6,7 @@ export default class Admin {
       "dff0dd30-b794-11ec-abe0-236257eb5adb")
       return response.badRequest({
         code: "NOT_HAVE_PERMISSION",
-        message: "No tiene permiso para hacer esta operación",
+        message: "No tiene permisos para hacer esta operación",
       })
     await next()
   }
