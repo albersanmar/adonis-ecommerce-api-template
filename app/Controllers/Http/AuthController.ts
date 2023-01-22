@@ -1,40 +1,62 @@
+import { ErrorReporter } from './../../Reporters/ErrorReporter';
 // import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 //import Mail from '@ioc:Adonis/Addons/Mail'
+
+import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Env from "@ioc:Adonis/Core/Env";
 
 import User from "App/Models/User";
 
-import { v1 as uuidv1 } from "uuid";
-
 export default class AuthController {
     public async register({ request, response }) {
-        const { email, name, phone, password, } = request.all()
-
-        if (!email || !name || !phone || !password) {
-            return response.badRequest({
-                code: "MISSING_PARAMS",
-                message: "Faltan parametros",
-            });
+        const customSchema = schema.create({
+            email: schema.string({ trim: true }, [
+                rules.email(),
+                rules.unique({ table: 'users', column: 'email' })
+            ]),
+            password: schema.string([
+                rules.minLength(8),
+                rules.maxLength(32)
+            ]),
+            phone: schema.string({ trim: true }, [
+                rules.minLength(10),
+                rules.unique({ table: 'users', column: 'phone' })
+            ]),
+            name: schema.string({ trim: true }, [
+                rules.minLength(3),
+                rules.maxLength(64)
+            ]),
+            lastName: schema.string({ trim: true }, [
+                rules.minLength(3),
+                rules.maxLength(64)
+            ])
+        })
+        const customMessages = {
+            unique: '{{ field }} ya existe',
+            required: '{{ field }} es requerido',
+            minLength: '{{ field }} debe ser minimo de {{ options.minLength }} caracteres',
+            maxLength: '{{ field }} debe ser maximo de {{ options.maxLength }} caracteres',
+            email: 'Email no valido',
+            phone: 'Telefono no valido',
         }
 
-        if (!this.ValidateEmail(email)) {
-            return response.badRequest({
-                code: "EMAIL_INVALID",
-                message: "Email no valido",
+        try {
+            const payload = await request.validate({ schema: customSchema, messages: customMessages, reporter: ErrorReporter })
+            const user = await User.create({
+                ...payload
             })
+            return response.send({
+                user: user
+            })
+        } catch (error) {
+            console.log(error)
+            if (error.messages?.errors?.length > 0) {
+                return response.badRequest(error.messages.errors[0])
+            }
+            return response.babRequest(error)
         }
 
-        let user = await User.query()
-            .where("email", email)
-            .first();
-        if (user) {
-            return response.badRequest({
-                code: "EMAIL_EXISTS",
-                message: "El email ya es usuado por otro usuario",
-            });
-        }
-
-        const uuid = uuidv1();
+        /*
         user = await User.create({
             id: uuid,
             name: name,
@@ -43,7 +65,7 @@ export default class AuthController {
             password: password,
             userTypeId: "01f92010-c7d8-11ec-a218-f9aad418431a", // Cliente
             confirm: true,
-        });
+        });*/
 
     }
     public async login({ auth, request, response }) {

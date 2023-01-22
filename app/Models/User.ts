@@ -6,9 +6,12 @@ import {
   BaseModel,
   belongsTo,
   BelongsTo,
+  beforeCreate,
 } from '@ioc:Adonis/Lucid/Orm'
 
 import UserType from 'App/Models/UserType'
+
+import { v1 as uuidv1 } from "uuid";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -16,6 +19,12 @@ export default class User extends BaseModel {
 
   @column()
   public name: string
+
+  @column({ serializeAs: 'lastName' })
+  public lastName: string
+
+  @column({ serializeAs: 'fullName' })
+  public fullName: string
 
   @column()
   public email: string
@@ -44,10 +53,23 @@ export default class User extends BaseModel {
   @column({ serializeAs: 'userTypeId' })
   public userTypeId?: string
 
-  @column.dateTime({ autoCreate: true, serializeAs: 'createdAt' })
+  @column.dateTime({
+    autoCreate: true,
+    serializeAs: 'createdAt',
+    serialize: (value: DateTime | null) => {
+      return value ? value.setZone('utc').toISO() : value
+    },
+  })
   public createdAt: DateTime
 
-  @column.dateTime({ autoCreate: true, autoUpdate: true, serializeAs: 'updatedAt' })
+  @column.dateTime({
+    autoCreate: true,
+    autoUpdate: true,
+    serializeAs: 'updatedAt',
+    serialize: (value: DateTime | null) => {
+      return value ? value.setZone('utc').toISO() : value
+    },
+  })
   public updatedAt: DateTime
 
   @belongsTo(() => UserType)
@@ -58,5 +80,15 @@ export default class User extends BaseModel {
     if (user.$dirty.password) {
       user.password = await Hash.make(user.password)
     }
+  }
+
+  @beforeSave()
+  public static async fullName(user: User) {
+    user.fullName = `${user.name} ${user.lastName}`
+  }
+
+  @beforeCreate()
+  public static async assignId(user: User) {
+    user.id = uuidv1()
   }
 }
