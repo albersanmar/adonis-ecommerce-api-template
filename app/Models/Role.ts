@@ -1,26 +1,32 @@
-import { column, BaseModel, belongsTo, BelongsTo, SnakeCaseNamingStrategy, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
-import User from 'App/Models/User'
-import Role from 'App/Models/Role'
+import { column, BaseModel, hasMany, HasMany, SnakeCaseNamingStrategy, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
+
 import { DateTime } from 'luxon'
+import { string } from '@ioc:Adonis/Core/Helpers'
 
 import moment from 'moment'
 import { v1 as uuidv1 } from "uuid";
 
-export default class UserRole extends BaseModel {
+import Permission from 'App/Models/Permission'
+
+export default class Role extends BaseModel {
     public static namingStrategy = new SnakeCaseNamingStrategy()
     public static primaryKey = 'id'
-    public static table = 'user_roles'
+    public static table = 'roles'
     public static selfAssignPrimaryKey = false
+
     @column({
         isPrimary: true,
     })
     public id: string
 
     @column()
-    public user_id: string
+    public slug: string
 
     @column()
-    public role_id: string
+    public name: string
+
+    @column()
+    public description: string
 
     @column({
         serialize: (value: DateTime | null) => {
@@ -65,13 +71,11 @@ export default class UserRole extends BaseModel {
     }
 
     @beforeCreate()
-    public static async assignId(userRole: UserRole) {
-        userRole.id = uuidv1()
+    public static async assignId(role: Role) {
+        role.id = uuidv1()
+        role.slug = string.dashCase(role.name)
     }
 
-    @belongsTo(() => User)
-    public user: BelongsTo<typeof User>
-
-    @belongsTo(() => Role)
-    public role: BelongsTo<typeof Role>
+    @hasMany(() => Permission)
+    public permissions: HasMany<typeof Permission>
 }

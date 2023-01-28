@@ -21,9 +21,6 @@ export default Env.rules({
 	APP_NAME: Env.schema.string(),
 	NODE_ENV: Env.schema.enum(['development', 'production', 'testing'] as const),
 
-	SMTP_HOST: Env.schema.string(),
-	SMTP_PORT: Env.schema.string(),
-
 	S3_KEY: Env.schema.string(),
 	S3_SECRET: Env.schema.string(),
 	S3_BUCKET: Env.schema.string(),

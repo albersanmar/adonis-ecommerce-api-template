@@ -47,6 +47,7 @@ export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[
             args,
         )
         let code = ''
+        console.log(rule, pointer)
         switch (rule) {
             case 'required':
                 code = 'MISSING_PARAMS'
@@ -63,6 +64,9 @@ export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[
                 break
             case 'phone':
                 code = 'INVALID_PHONE'
+                break
+            case 'regex':
+                code = 'INVALID_FORMAT'
                 break
         }
 

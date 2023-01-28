@@ -1,15 +1,15 @@
 import { column, BaseModel, belongsTo, BelongsTo, SnakeCaseNamingStrategy, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
 import User from 'App/Models/User'
-import Role from 'App/Models/Role'
+import Permission from 'App/Models/Permission'
 import { DateTime } from 'luxon'
 
 import moment from 'moment'
 import { v1 as uuidv1 } from "uuid";
 
-export default class UserRole extends BaseModel {
+export default class UserPermission extends BaseModel {
     public static namingStrategy = new SnakeCaseNamingStrategy()
     public static primaryKey = 'id'
-    public static table = 'user_roles'
+    public static table = 'user_permissions'
     public static selfAssignPrimaryKey = false
     @column({
         isPrimary: true,
@@ -20,7 +20,7 @@ export default class UserRole extends BaseModel {
     public user_id: string
 
     @column()
-    public role_id: string
+    public permission_id: string
 
     @column({
         serialize: (value: DateTime | null) => {
@@ -65,13 +65,13 @@ export default class UserRole extends BaseModel {
     }
 
     @beforeCreate()
-    public static async assignId(userRole: UserRole) {
-        userRole.id = uuidv1()
+    public static async assignId(userPermission: UserPermission) {
+        userPermission.id = uuidv1()
     }
 
     @belongsTo(() => User)
     public user: BelongsTo<typeof User>
 
-    @belongsTo(() => Role)
-    public role: BelongsTo<typeof Role>
+    @belongsTo(() => Permission)
+    public permission: BelongsTo<typeof Permission>
 }

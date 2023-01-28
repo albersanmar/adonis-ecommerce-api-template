@@ -4,12 +4,8 @@ import {
   column,
   beforeSave,
   BaseModel,
-  belongsTo,
-  BelongsTo,
   beforeCreate,
 } from '@ioc:Adonis/Lucid/Orm'
-
-import UserType from 'App/Models/UserType'
 
 import { v1 as uuidv1 } from "uuid";
 
@@ -50,9 +46,6 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public blocked?: boolean
 
-  @column({ serializeAs: 'userTypeId' })
-  public userTypeId?: string
-
   @column.dateTime({
     autoCreate: true,
     serializeAs: 'createdAt',
@@ -72,9 +65,6 @@ export default class User extends BaseModel {
   })
   public updatedAt: DateTime
 
-  @belongsTo(() => UserType)
-  public userType: BelongsTo<typeof UserType>
-
   @beforeSave()
   public static async hashPassword(user: User) {
     if (user.$dirty.password) {
@@ -84,6 +74,8 @@ export default class User extends BaseModel {
 
   @beforeSave()
   public static async fullName(user: User) {
+    user.name = user.name.trim().replace(/\s\s+/g, " ")
+    user.lastName = user.lastName.trim().replace(/\s\s+/g, " ")
     user.fullName = `${user.name} ${user.lastName}`
   }
 

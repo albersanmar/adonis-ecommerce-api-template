@@ -1,11 +1,13 @@
-import { ErrorReporter } from './../../Reporters/ErrorReporter';
-// import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
-//import Mail from '@ioc:Adonis/Addons/Mail'
+import Mail from '@ioc:Adonis/Addons/Mail'
+import { ErrorReporter } from 'App/Reporters/ErrorReporter';
 
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Env from "@ioc:Adonis/Core/Env";
 
 import User from "App/Models/User";
+
+import CustomMessages from 'App/Utils/CustomMessages';
+import Hash from '@ioc:Adonis/Core/Hash';
 
 export default class AuthController {
     public async register({ request, response }) {
@@ -16,7 +18,8 @@ export default class AuthController {
             ]),
             password: schema.string([
                 rules.minLength(8),
-                rules.maxLength(32)
+                rules.maxLength(32),
+                rules.regex(/^[a-z\d\-_\s#$!]+$/i)
             ]),
             phone: schema.string({ trim: true }, [
                 rules.minLength(10),
@@ -24,27 +27,37 @@ export default class AuthController {
             ]),
             name: schema.string({ trim: true }, [
                 rules.minLength(3),
-                rules.maxLength(64)
+                rules.maxLength(64),
+                rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
             ]),
             lastName: schema.string({ trim: true }, [
                 rules.minLength(3),
-                rules.maxLength(64)
+                rules.maxLength(64),
+                rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
             ])
         })
-        const customMessages = {
-            unique: '{{ field }} ya existe',
-            required: '{{ field }} es requerido',
-            minLength: '{{ field }} debe ser minimo de {{ options.minLength }} caracteres',
-            maxLength: '{{ field }} debe ser maximo de {{ options.maxLength }} caracteres',
-            email: 'Email no valido',
-            phone: 'Telefono no valido',
-        }
 
         try {
-            const payload = await request.validate({ schema: customSchema, messages: customMessages, reporter: ErrorReporter })
-            const user = await User.create({
-                ...payload
+            const payload = await request.validate({
+                schema: customSchema,
+                messages: CustomMessages,
+                reporter: ErrorReporter
             })
+            const min = 1000, max = 9999
+            const code = Math.floor(Math.random() * (max - min) + min)
+            const user = await User.create({
+                ...payload,
+                confirmToken: code
+            })
+
+            await Mail.use('ses')
+                .send((message) => {
+                    message
+                        .from(Env.get('SES_EMAIL'))
+                        .to(payload.email)
+                        .subject('Verifica tu cuenta')
+                        .htmlView('emails/confirm', { code: code })
+                })
             return response.send({
                 user: user
             })
@@ -53,88 +66,129 @@ export default class AuthController {
             if (error.messages?.errors?.length > 0) {
                 return response.badRequest(error.messages.errors[0])
             }
-            return response.babRequest(error)
+            return response.badRequest(error)
         }
-
-        /*
-        user = await User.create({
-            id: uuid,
-            name: name,
-            email: email,
-            phone: phone,
-            password: password,
-            userTypeId: "01f92010-c7d8-11ec-a218-f9aad418431a", // Cliente
-            confirm: true,
-        });*/
-
     }
     public async login({ auth, request, response }) {
-        const { email, password } = request.all()
+        const customSchema = schema.create({
+            email: schema.string({ trim: true }, [
+                rules.email(),
+            ]),
+            password: schema.string([
+                rules.minLength(8),
+                rules.maxLength(32),
+                rules.regex(/^[a-z\d\-_\s#$!]+$/i)
+            ]),
+        })
 
-        if (!email || !password) {
-            return response.badRequest({
-                code: "MISSING_PARAMS",
-                message: "Faltan parametros",
-            });
-        }
-
-        if (!this.ValidateEmail(email)) {
-            return response.badRequest({
-                code: "EMAIL_INVALID",
-                message: "Email no valido",
-            });
-        }
-        const user = await User.query()
-            .where("email", email)
-            .first()
-        if (!user) {
-            return response.badRequest({
-                code: "USER_NOT_FOUND",
-                message: "El usuario no existe",
-            })
-        }
-        if (!user.confirm) {
-            return response.badRequest({
-                code: "USER_NOT_CONFIRMED",
-                message: "El usuario no ha sido confirmado",
-            })
-        }
-        if (user.blocked) {
-            return response.badRequest({
-                code: "USER_BLOCKED",
-                message: "Usuario bloqueado",
-            })
-        }
         try {
-            const token = await auth.use("api").attempt(email, password);
-            return token;
+            const payload = await request.validate({
+                schema: customSchema,
+                messages: CustomMessages,
+                reporter: ErrorReporter
+            })
+
+            const user = await User
+                .query()
+                .where('email', payload.email)
+                .first()
+
+            if (!user) {
+                return response.badRequest({
+                    code: 'USER_NOT_FOUND',
+                    message: 'El usuario no existe'
+                })
+            }
+
+            if (!(await Hash.verify(user!.password, payload.password))) {
+                return response.badRequest({
+                    code: 'INVALID_CREDENTIALS',
+                    message: 'Usuario o contraseña invalido'
+                })
+            }
+
+            if (!user.confirm) {
+                return response.badRequest({
+                    code: "USER_NOT_CONFIRMED",
+                    message: "El usuario no ha sido confirmado",
+                })
+            }
+            if (user.blocked) {
+                return response.badRequest({
+                    code: "USER_BLOCKED",
+                    message: "Usuario bloqueado",
+                })
+            }
+
+            const token = await auth.use('api').generate(user)
+
+            return response.send(token)
         } catch (error) {
-            return response.badRequest({
-                code: "INVALID_CREDENTIALS",
-                message: "Correo o contraseña invalido",
-            });
+            console.log(error)
+            if (error.messages?.errors?.length > 0) {
+                return response.badRequest(error.messages.errors[0])
+            }
+            return response.badRequest(error)
         }
     }
     public async logout({ auth, response }) {
         await auth.use("api").revoke();
         return response.send({
-            code: "SESSION_CLOSED_SUCCESSFULLY",
+            code: "SESSION_CLOSED",
             message: "Sesión cerrada correctamente",
         });
     }
     public async confirm({ request, response }) {
-        const token = request.all().token;
-        const user = await User.findBy("confirm_token", token);
-        if (user !== null) {
-            user!.confirm = true;
-            user!.confirmToken = "";
-            user!.save();
+        const customSchema = schema.create({
+            code: schema.string({ trim: true }, [
+                rules.minLength(4),
+                rules.maxLength(4),
+                rules.regex(/^[0-9]*$/gm)
+            ]),
+            email: schema.string({ trim: true }, [
+                rules.email(),
+            ]),
+        })
+
+        try {
+            const payload = await request.validate({
+                schema: customSchema,
+                messages: CustomMessages,
+                reporter: ErrorReporter
+            })
+
+            const user = await User.query()
+                .where('email', payload.email)
+                .first()
+
+            if (!user) {
+                return response.badRequest({
+                    code: 'USER_NOT_FOUND',
+                    message: 'El usuario no existe'
+                })
+            }
+
+            if (user!.confirmToken !== payload.code) {
+                return response.badRequest({
+                    code: 'CODE_NOT_VALID',
+                    message: 'Código no valido'
+                })
+            }
+
+            await User.query()
+                .where('id', user!.id)
+                .update({ confirmToken: null, confirm: true })
+
+            return response.send({
+                code: 'USER_CONFIRMED',
+                message: 'Usuario confirmado'
+            })
+        } catch (error) {
+            console.log(error)
+            if (error.messages?.errors?.length > 0) {
+                return response.badRequest(error.messages.errors[0])
+            }
+            return response.badRequest(error)
         }
-        return response.redirect().toPath(Env.get("REDIRECT_URL"));
-    }
-    private ValidateEmail(email: string): Boolean {
-        const regex =
-            /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-        return regex.test(email);
     }
 }

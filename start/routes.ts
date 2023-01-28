@@ -25,32 +25,33 @@ Route.get('/', async () => {
 })
 
 Route.group(() => {
+  // Permissions
+  Route.group(() => {
+    Route.post('/', 'PermissionsController.store')
+    Route.get('/', 'PermissionsController.index')
+    Route.get('/:id', 'PermissionsController.show')
+    Route.put('/:id', 'PermissionsController.update')
+    Route.delete('/:id', 'PermissionsController.destroy')
+  }).prefix('permissions').middleware('auth')
   // Auth
   Route.group(() => {
     Route.post('/register', 'AuthController.register')
     Route.post('/login', 'AuthController.login')
+    Route.post('/confirm', 'AuthController.confirm')
   }).prefix('auth')
   Route.group(() => {
     Route.post('/logout', 'AuthController.logout')
-    Route.get('/confirm', 'AuthController.confirm')
-  }).prefix('auth').middleware('api-auth')
+  }).prefix('auth').middleware('auth')
   // Users
   Route.group(() => {
     Route.post('/', 'UsersController.create')
-  }).prefix('users').middleware(['api-auth', 'admin'])
+  }).prefix('users').middleware(['auth', 'admin'])
   Route.group(() => {
     Route.get('/me', 'UsersController.me')
     Route.put('/:id', 'UsersController.update').middleware('user')
     Route.get('/:id', 'UsersController.findOne')
     Route.get('/', 'UsersController.find')
-  }).prefix('users').middleware('api-auth')
-  // UserTypes
-  Route.group(() => {
-    Route.post('/', 'UserTypesController.create')
-    Route.put('/:id', 'UserTypesController.update')
-    Route.get('/:id', 'UserTypesController.findOne')
-    Route.get('/', 'UserTypesController.find')
-  }).prefix('user-types').middleware(['api-auth', 'admin'])
+  }).prefix('users').middleware('auth')
   // Files
   Route.group(() => {
     Route.post('/', 'FilesController.upload')
