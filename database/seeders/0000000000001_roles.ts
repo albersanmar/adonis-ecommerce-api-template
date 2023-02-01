@@ -1,21 +1,30 @@
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
 
-import UserType from "App/Models/UserType";
+import Role from "App/Models/Role";
 
 import { DateTime } from 'luxon'
 
 export default class UserTypeSeeder extends BaseSeeder {
   public async run () {
-    await UserType.createMany([
+    await Role.createMany([
       {
-        id: 'dff0dd30-b794-11ec-abe0-236257eb5adb',
-        name: 'Administrador',
+        id: '19e7fb40-a0e2-11ed-b16b-f79849cd9fd9',
+        name: 'Root',
+        slug: 'root',
         createdAt: DateTime.utc(),
         updatedAt: DateTime.utc(),
       },
       {
-        id: '01f92010-c7d8-11ec-a218-f9aad418431a',
+        id: '1f34f210-a0e2-11ed-b16b-f79849cd9fd9',
+        name: 'Administrador',
+        slug: 'administrador',
+        createdAt: DateTime.utc(),
+        updatedAt: DateTime.utc(),
+      },
+      {
+        id: '276d9720-a0e2-11ed-b16b-f79849cd9fd9',
         name: 'Cliente',
+        slug: 'cliente',
         createdAt: DateTime.utc(),
         updatedAt: DateTime.utc(),
       }

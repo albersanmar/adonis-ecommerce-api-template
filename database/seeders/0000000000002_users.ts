@@ -8,15 +8,22 @@ export default class UserSeeder extends BaseSeeder {
   public async run() {
     await User.createMany([
       {
-        id: 'ecf11f80-c7c6-11ec-84b9-6b79972dbe46',
-        name: 'Administrador',
+        id: '36866b40-a0e4-11ed-be80-87a6daf5deaa',
         email: 'admin@vortexdevops.com',
         password: 'AdminAdmin',
-        phone: '1231231212',
+        phone: '1234567890',
         confirm: true,
         createdAt: DateTime.utc(),
         updatedAt: DateTime.utc(),
-        userTypeId: 'dff0dd30-b794-11ec-abe0-236257eb5adb',
+      },
+      {
+        id: 'd6934380-9aca-11ed-9a73-ad2ecd89790f',
+        email: 'albersanmar4@gmail.com',
+        password: 'password',
+        phone: '2222062058',
+        confirm: true,
+        createdAt: DateTime.utc(),
+        updatedAt: DateTime.utc(),
       },
     ])
   }

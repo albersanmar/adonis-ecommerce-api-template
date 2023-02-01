@@ -1,13 +1,19 @@
-import { column, BaseModel, belongsTo, BelongsTo, SnakeCaseNamingStrategy, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
+import {
+    column,
+    BaseModel,
+    hasMany,
+    HasMany,
+    SnakeCaseNamingStrategy,
+    beforeCreate,
+    beforeSave
+} from '@ioc:Adonis/Lucid/Orm'
 
 import { DateTime } from 'luxon'
 import { string } from '@ioc:Adonis/Core/Helpers'
 
-import moment from 'moment'
-
 import { v1 as uuidv1 } from "uuid";
 
-import Role from 'App/Models/Role'
+import Role from 'App/Models/Role';
 
 export default class Permission extends BaseModel {
     public static namingStrategy = new SnakeCaseNamingStrategy()
@@ -32,8 +38,8 @@ export default class Permission extends BaseModel {
     @column.dateTime({
         autoCreate: true,
         serializeAs: 'createdAt',
-        serialize: (value: DateTime | null) => {
-            return value ? value.setZone('utc').toISO() : value
+        serialize: (value: DateTime) => {
+            return value.setZone('utc').toISO()
         },
     })
     public createdAt: DateTime
@@ -42,18 +48,25 @@ export default class Permission extends BaseModel {
         autoCreate: true,
         autoUpdate: true,
         serializeAs: 'updatedAt',
-        serialize: (value: DateTime | null) => {
-            return value ? value.setZone('utc').toISO() : value
+        serialize: (value: DateTime) => {
+            return value.setZone('utc').toISO()
         },
     })
     public updatedAt: DateTime
 
     @beforeCreate()
     public static async assignId(permission: Permission) {
-        permission.id = uuidv1()
-        permission.slug = string.dashCase(permission.name)
+        if (!permission.id) {
+            permission.id = uuidv1()
+        }
     }
 
-    @belongsTo(() => Role)
-    public role: BelongsTo<typeof Role>
+    @beforeSave()
+    public static async saveSlug(permission: Permission) {
+        permission.slug = string.dashCase(permission.name)
+
+    }
+
+    @hasMany(() => Role)
+    public roles: HasMany<typeof Role>
 }

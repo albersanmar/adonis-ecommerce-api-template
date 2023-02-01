@@ -7,5 +7,8 @@ export default {
     phone: 'Telefono no valido',
     'password.regex': 'Formato de contraseña invalido',
     'name.regex': 'Formato de nombre(s) invalido',
-    'lastName.regex': 'Formato de apellidos invalido'
+    'lastName.regex': 'Formato de apellidos invalido',
+    'permissions.array': 'Lista de permisos no valida',
+    'permissions.*.string': 'Permiso no valido',
+    'permissions.*.exists': 'Permiso no existe',
 }

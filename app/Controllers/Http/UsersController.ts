@@ -2,7 +2,6 @@
 // import Mail from '@ioc:Adonis/Addons/Mail'
 
 import User from "App/Models/User";
-import UserType from 'App/Models/UserType';
 
 import { v1 as uuidv1 } from "uuid";
 
@@ -112,17 +111,11 @@ export default class UsersController {
 
     const user = await User.query()
       .where("id", authUser.id)
-      .preload("userType")
+      .preload("roles")
       .first()
 
     response.send({
       user: user,
     });
-  }
-
-  private ValidateEmail(email: string): Boolean {
-    const regex =
-      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
-    return regex.test(email);
   }
 }

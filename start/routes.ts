@@ -31,8 +31,14 @@ Route.group(() => {
     Route.get('/', 'PermissionsController.index')
     Route.get('/:id', 'PermissionsController.show')
     Route.put('/:id', 'PermissionsController.update')
-    Route.delete('/:id', 'PermissionsController.destroy')
-  }).prefix('permissions').middleware('auth')
+  }).prefix('permissions').middleware(['auth', 'is:root,administrador'])
+  // Roles
+  Route.group(() => {
+    Route.post('/', 'RolesController.store')
+    Route.get('/', 'RolesController.index')
+    Route.get('/:id', 'RolesController.show')
+    Route.put('/:id', 'RolesController.update')
+  }).prefix('roles').middleware(['auth', 'is:root,administrador'])
   // Auth
   Route.group(() => {
     Route.post('/register', 'AuthController.register')
@@ -41,20 +47,15 @@ Route.group(() => {
   }).prefix('auth')
   Route.group(() => {
     Route.post('/logout', 'AuthController.logout')
-  }).prefix('auth').middleware('auth')
+  }).prefix('auth').middleware(['auth'])
   // Users
   Route.group(() => {
     Route.post('/', 'UsersController.create')
-  }).prefix('users').middleware(['auth', 'admin'])
+  }).prefix('users').middleware(['auth'])
   Route.group(() => {
     Route.get('/me', 'UsersController.me')
-    Route.put('/:id', 'UsersController.update').middleware('user')
+    Route.put('/:id', 'UsersController.update')
     Route.get('/:id', 'UsersController.findOne')
     Route.get('/', 'UsersController.find')
-  }).prefix('users').middleware('auth')
-  // Files
-  Route.group(() => {
-    Route.post('/', 'FilesController.upload')
-    Route.delete('/', 'FilesController.delete')
-  }).prefix('files').middleware('auth')
+  }).prefix('users').middleware(['auth'])
 }).prefix('api/v1')

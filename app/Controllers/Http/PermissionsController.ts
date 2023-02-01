@@ -12,12 +12,12 @@ export default class PermissionController {
         })
     }
 
-    async show({request, response}) {
-        const {id} = request.params()
+    async show({ request, response }) {
+        const { id } = request.params()
 
         const permission = await Permission.find(id)
         if (!permission) {
-            response.badRequest({
+            return response.badRequest({
                 code: 'PERMISSION_NOT_FOUND',
                 message: 'El permiso no existe'
             })
@@ -31,6 +31,7 @@ export default class PermissionController {
     async store({ request, response }) {
         const customSchema = schema.create({
             name: schema.string({ trim: true }, [
+                rules.unique({ table: 'roles', column: 'name' }),
                 rules.minLength(3),
                 rules.maxLength(32),
                 rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
@@ -63,7 +64,7 @@ export default class PermissionController {
 
     async update({ request, response }) {
         const customSchema = schema.create({
-            name: schema.string({ trim: true }, [
+            name: schema.string.optional({ trim: true }, [
                 rules.minLength(3),
                 rules.maxLength(32),
                 rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
@@ -85,11 +86,24 @@ export default class PermissionController {
             })
 
             const permission = await Permission.find(id)
-            if(!permission) {
-                response.badRequest({
+            if (!permission) {
+                return response.badRequest({
                     code: 'PERMISSION_NOT_FOUND',
                     message: 'El permiso no existe'
                 })
+            }
+
+            if (payload.name) {
+                const pResp = await Permission.query()
+                    .where('name', payload.name)
+                    .where('id', '!=', id)
+                    .first()
+                if (pResp) {
+                    return response.badRequest({
+                        code: 'NAME_EXISTS',
+                        message: 'El nombre ya esta en uso'
+                    })
+                }
             }
 
             await permission!.merge(payload).save()
@@ -106,7 +120,7 @@ export default class PermissionController {
 
 
     async destroy({ request, response }) {
-        const {id} = request.params()
+        const { id } = request.params()
         const permission = await Permission.find(id)
         if (!permission) {
             response.badRequest({
@@ -122,5 +136,4 @@ export default class PermissionController {
             message: 'Permiso eliminado'
         })
     }
-
 }

@@ -15,9 +15,6 @@ type ErrorNode = {
 export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[] }> {
     public hasErrors = false
 
-    /**
-     * Tracking reported errors
-     */
     private errors: ErrorNode[] = []
 
     constructor(
@@ -26,10 +23,6 @@ export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[
     ) {
     }
 
-    /**
-     * Invoked by the validation rules to
-     * report the error
-     */
     public report(
         pointer: string,
         rule: string,
@@ -47,7 +40,7 @@ export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[
             args,
         )
         let code = ''
-        console.log(rule, pointer)
+        console.log(rule, pointer, arrayExpressionPointer, args)
         switch (rule) {
             case 'required':
                 code = 'MISSING_PARAMS'
@@ -67,6 +60,15 @@ export class ErrorReporter implements ErrorReporterContract<{ errors: ErrorNode[
                 break
             case 'regex':
                 code = 'INVALID_FORMAT'
+                break
+            case 'array':
+                code = 'INVALID_ARRAY'
+                break
+            case 'string':
+                code = 'INVALID_STRING'
+                break
+            case 'exists':
+                code = 'ELEMENT_NOT_FOUND'
                 break
         }
 

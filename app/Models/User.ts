@@ -5,22 +5,19 @@ import {
   beforeSave,
   BaseModel,
   beforeCreate,
+  manyToMany,
+  ManyToMany,
+  HasOne,
+  hasOne,
 } from '@ioc:Adonis/Lucid/Orm'
 
 import { v1 as uuidv1 } from "uuid";
+import Role from 'App/Models/Role';
+import Profile from 'App/Models/Profile';
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
   public id: string
-
-  @column()
-  public name: string
-
-  @column({ serializeAs: 'lastName' })
-  public lastName: string
-
-  @column({ serializeAs: 'fullName' })
-  public fullName: string
 
   @column()
   public email: string
@@ -46,11 +43,14 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public blocked?: boolean
 
+  @column({ serializeAs: 'profileId' })
+  public profileId: string
+
   @column.dateTime({
     autoCreate: true,
     serializeAs: 'createdAt',
-    serialize: (value: DateTime | null) => {
-      return value ? value.setZone('utc').toISO() : value
+    serialize: (value: DateTime) => {
+      return value.setZone('utc').toISO()
     },
   })
   public createdAt: DateTime
@@ -59,8 +59,8 @@ export default class User extends BaseModel {
     autoCreate: true,
     autoUpdate: true,
     serializeAs: 'updatedAt',
-    serialize: (value: DateTime | null) => {
-      return value ? value.setZone('utc').toISO() : value
+    serialize: (value: DateTime) => {
+      return value.setZone('utc').toISO()
     },
   })
   public updatedAt: DateTime
@@ -72,15 +72,18 @@ export default class User extends BaseModel {
     }
   }
 
-  @beforeSave()
-  public static async fullName(user: User) {
-    user.name = user.name.trim().replace(/\s\s+/g, " ")
-    user.lastName = user.lastName.trim().replace(/\s\s+/g, " ")
-    user.fullName = `${user.name} ${user.lastName}`
-  }
-
   @beforeCreate()
   public static async assignId(user: User) {
-    user.id = uuidv1()
+    if (!user.id) {
+      user.id = uuidv1()
+    }
   }
+
+  @hasOne(() => Profile)
+  public profile: HasOne<typeof Profile>
+
+  @manyToMany(() => Role, {
+    pivotTable: 'user_roles'
+  })
+  public roles: ManyToMany<typeof Role>
 }

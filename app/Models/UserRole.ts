@@ -1,9 +1,16 @@
-import { column, BaseModel, belongsTo, BelongsTo, SnakeCaseNamingStrategy, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
-import User from 'App/Models/User'
-import Role from 'App/Models/Role'
+import {
+    column,
+    BaseModel,
+    belongsTo,
+    BelongsTo,
+    SnakeCaseNamingStrategy,
+    beforeCreate
+} from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 
-import moment from 'moment'
+import User from 'App/Models/User'
+import Role from 'App/Models/Role'
+
 import { v1 as uuidv1 } from "uuid";
 
 export default class UserRole extends BaseModel {
@@ -16,57 +23,36 @@ export default class UserRole extends BaseModel {
     })
     public id: string
 
-    @column()
-    public user_id: string
+    @column({ serializeAs: 'userId' })
+    public userId: string
 
-    @column()
-    public role_id: string
+    @column({ serializeAs: 'roleId' })
+    public roleId: string
 
-    @column({
-        serialize: (value: DateTime | null) => {
-            return value ? moment(value).format('lll') : value
+    @column.dateTime({
+        autoCreate: true,
+        serializeAs: 'createdAt',
+        serialize: (value: DateTime) => {
+            return value.setZone('utc').toISO()
         },
     })
-    public created_at: DateTime
+    public createdAt: DateTime
 
-    @column({
-        serialize: (value: DateTime | null) => {
-            return value ? moment(value).format('lll') : value
+    @column.dateTime({
+        autoCreate: true,
+        autoUpdate: true,
+        serializeAs: 'updatedAt',
+        serialize: (value: DateTime) => {
+            return value.setZone('utc').toISO()
         },
     })
-    public updated_at: DateTime
-
-    public static boot() {
-        super.boot()
-        this.before('create', async (_modelInstance) => {
-            _modelInstance.created_at = this.formatDateTime(_modelInstance.created_at)
-            _modelInstance.updated_at = this.formatDateTime(_modelInstance.updated_at)
-        })
-        this.before('update', async (_modelInstance) => {
-            _modelInstance.created_at = this.formatDateTime(_modelInstance.created_at)
-            _modelInstance.updated_at = this.formatDateTime(_modelInstance.updated_at)
-        })
-    }
-    private static formatDateTime(datetime) {
-        let value = new Date(datetime)
-        return datetime
-            ? value.getFullYear() +
-            '-' +
-            (value.getMonth() + 1) +
-            '-' +
-            value.getDate() +
-            ' ' +
-            value.getHours() +
-            ':' +
-            value.getMinutes() +
-            ':' +
-            value.getSeconds()
-            : datetime
-    }
+    public updatedAt: DateTime
 
     @beforeCreate()
     public static async assignId(userRole: UserRole) {
-        userRole.id = uuidv1()
+        if (!userRole.id) {
+            userRole.id = uuidv1()
+        }
     }
 
     @belongsTo(() => User)

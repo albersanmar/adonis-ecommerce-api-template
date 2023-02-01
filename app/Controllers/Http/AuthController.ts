@@ -8,6 +8,8 @@ import User from "App/Models/User";
 
 import CustomMessages from 'App/Utils/CustomMessages';
 import Hash from '@ioc:Adonis/Core/Hash';
+import UserRole from 'App/Models/UserRole';
+import Profile from 'App/Models/Profile';
 
 export default class AuthController {
     public async register({ request, response }) {
@@ -43,12 +45,30 @@ export default class AuthController {
                 messages: CustomMessages,
                 reporter: ErrorReporter
             })
+
             const min = 1000, max = 9999
             const code = Math.floor(Math.random() * (max - min) + min)
+
             const user = await User.create({
                 ...payload,
+                email: payload.email,
+                phone: payload.phone,
+                password: payload.password,
                 confirmToken: code
             })
+
+            await UserRole.create({
+                userId: user.id,
+                roleId: '276d9720-a0e2-11ed-b16b-f79849cd9fd9' // RoleId del cliente
+            })
+
+            const profile = await Profile.create({
+                name: payload.name,
+                lastName: payload.lastName,
+                userId: user.id,
+            })
+
+            await user.merge({ profileId: profile.id }).save()
 
             await Mail.use('ses')
                 .send((message) => {
