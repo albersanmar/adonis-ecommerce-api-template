@@ -1,5 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+
 import Database from '@ioc:Adonis/Lucid/Database'
+
 import User from 'App/Models/User'
  
 export default class Is {
@@ -28,9 +30,9 @@ export default class Is {
             .join('roles', 'roles.id', '=', 'user_roles.role_id')
             .where('users.id', user.id)
             .whereIn('roles.slug', roleNames)
-            .count('* as roleCount')
+            .count('*', 'count')
 
-        const roleCount = resp[0].roleCount
+        const roleCount = resp[0].count
         return roleCount > 0
     }
 }

@@ -134,16 +134,18 @@ export default class RoleController {
             }
 
             await role!.merge(data).save()
-            role.related('permissions').detach()
+            if (permissions && permissions.length > 0) {
+                role.related('permissions').detach()
 
-            const rolePermissions: any[] = []
-            permissions.forEach((p) => {
-                rolePermissions.push({
-                    roleId: role!.id,
-                    permissionId: p
+                const rolePermissions: any[] = []
+                permissions.forEach((p) => {
+                    rolePermissions.push({
+                        roleId: role!.id,
+                        permissionId: p
+                    })
                 })
-            })
-            await RolePermission.createMany(rolePermissions)
+                await RolePermission.createMany(rolePermissions)
+            }
 
             role = await Role.query()
                 .where('id', role.id)

@@ -1,5 +1,5 @@
-import { DateTime } from 'luxon'
 import Hash from '@ioc:Adonis/Core/Hash'
+import { DateTime } from 'luxon'
 import {
   column,
   beforeSave,
@@ -11,9 +11,11 @@ import {
   hasOne,
 } from '@ioc:Adonis/Lucid/Orm'
 
-import { v1 as uuidv1 } from "uuid";
+import Database from '@ioc:Adonis/Lucid/Database'
 import Role from 'App/Models/Role';
 import Profile from 'App/Models/Profile';
+
+import { v1 as uuidv1 } from "uuid";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -43,7 +45,7 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public blocked?: boolean
 
-  @column({ serializeAs: 'profileId' })
+  @column({ serializeAs: null })
   public profileId: string
 
   @column.dateTime({
@@ -86,4 +88,16 @@ export default class User extends BaseModel {
     pivotTable: 'user_roles'
   })
   public roles: ManyToMany<typeof Role>
+
+  async hasRole(...roles: string[]) {
+    const resp = await Database.query()
+      .from('users')
+      .join('user_roles', 'user_roles.user_id', '=', 'users.id')
+      .join('roles', 'roles.id', '=', 'user_roles.role_id')
+      .where('users.id', this.id)
+      .whereIn('roles.slug', roles)
+      .count('*', 'count')
+    const roleCount = resp[0].count
+    return roleCount > 0
+  }
 }

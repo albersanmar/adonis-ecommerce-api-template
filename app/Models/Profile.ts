@@ -25,7 +25,7 @@ export default class Profile extends BaseModel {
     @column({ serializeAs: 'fullName' })
     public fullName: string
 
-    @column({ serializeAs: 'userId' })
+    @column({ serializeAs: null })
     public userId: string
 
     @column.dateTime({
@@ -49,9 +49,11 @@ export default class Profile extends BaseModel {
 
     @beforeSave()
     public static async fullName(profile: Profile) {
-        profile.name = profile.name.trim().replace(/\s\s+/g, " ")
-        profile.lastName = profile.lastName.trim().replace(/\s\s+/g, " ")
-        profile.fullName = `${profile.name} ${profile.lastName}`
+        if (profile.name && profile.lastName) {
+            profile.name = profile.name.trim().replace(/\s\s+/g, " ")
+            profile.lastName = profile.lastName.trim().replace(/\s\s+/g, " ")
+            profile.fullName = `${profile.name} ${profile.lastName}`
+        }
     }
 
     @beforeCreate()

@@ -1,15 +1,15 @@
+import Env from "@ioc:Adonis/Core/Env";
 import Mail from '@ioc:Adonis/Addons/Mail'
-import { ErrorReporter } from 'App/Reporters/ErrorReporter';
 
 import { schema, rules } from '@ioc:Adonis/Core/Validator'
-import Env from "@ioc:Adonis/Core/Env";
+import { ErrorReporter } from 'App/Reporters/ErrorReporter';
 
 import User from "App/Models/User";
-
-import CustomMessages from 'App/Utils/CustomMessages';
-import Hash from '@ioc:Adonis/Core/Hash';
 import UserRole from 'App/Models/UserRole';
 import Profile from 'App/Models/Profile';
+
+import Hash from '@ioc:Adonis/Core/Hash';
+import CustomMessages from 'App/Utils/CustomMessages';
 
 export default class AuthController {
     public async register({ request, response }) {

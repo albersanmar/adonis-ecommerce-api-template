@@ -27,18 +27,18 @@ Route.get('/', async () => {
 Route.group(() => {
   // Permissions
   Route.group(() => {
-    Route.post('/', 'PermissionsController.store')
-    Route.get('/', 'PermissionsController.index')
-    Route.get('/:id', 'PermissionsController.show')
-    Route.put('/:id', 'PermissionsController.update')
-  }).prefix('permissions').middleware(['auth', 'is:root,administrador'])
+    Route.post('/', 'PermissionsController.store').middleware('is:root')
+    Route.put('/:id', 'PermissionsController.update').middleware('is:root')
+    Route.get('/', 'PermissionsController.index').middleware('is:root,administrador')
+    Route.get('/:id', 'PermissionsController.show').middleware('is:root,administrador')
+  }).prefix('permissions').middleware(['auth'])
   // Roles
   Route.group(() => {
-    Route.post('/', 'RolesController.store')
-    Route.get('/', 'RolesController.index')
-    Route.get('/:id', 'RolesController.show')
-    Route.put('/:id', 'RolesController.update')
-  }).prefix('roles').middleware(['auth', 'is:root,administrador'])
+    Route.post('/', 'RolesController.store').middleware('is:root')
+    Route.put('/:id', 'RolesController.update').middleware('is:root')
+    Route.get('/', 'RolesController.index').middleware('is:root,administrador')
+    Route.get('/:id', 'RolesController.show').middleware('is:root,administrador')
+  }).prefix('roles').middleware(['auth'])
   // Auth
   Route.group(() => {
     Route.post('/register', 'AuthController.register')
@@ -50,12 +50,10 @@ Route.group(() => {
   }).prefix('auth').middleware(['auth'])
   // Users
   Route.group(() => {
-    Route.post('/', 'UsersController.create')
-  }).prefix('users').middleware(['auth'])
-  Route.group(() => {
+    Route.post('/', 'UsersController.create').middleware('is:root,administrador')
+    Route.put('/:id', 'UsersController.update').middleware('is:root,administrador,cliente')
+    Route.get('/', 'UsersController.show')
     Route.get('/me', 'UsersController.me')
-    Route.put('/:id', 'UsersController.update')
-    Route.get('/:id', 'UsersController.findOne')
-    Route.get('/', 'UsersController.find')
+    Route.get('/:id', 'UsersController.index')
   }).prefix('users').middleware(['auth'])
 }).prefix('api/v1')
