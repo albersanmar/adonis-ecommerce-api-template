@@ -116,7 +116,7 @@ export default class RoleController {
             if (!role) {
                 return response.badRequest({
                     code: 'ROLE_NOT_FOUND',
-                    message: 'El permiso no existe'
+                    message: 'El role no existe'
                 })
             }
 
@@ -154,7 +154,6 @@ export default class RoleController {
 
             return response.send({ role: role })
         } catch (error) {
-            // console.log(error)
             if (error.messages?.errors?.length > 0) {
                 return response.badRequest(error.messages.errors[0])
             }

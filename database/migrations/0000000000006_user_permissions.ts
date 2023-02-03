@@ -1,7 +1,7 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 import Config from '@ioc:Adonis/Core/Config'
 export default class UserPermissions extends BaseSchema {
-    protected tableName = Config.get('rolePermission.user_permission_table', 'user_permissions')
+    protected tableName = Config.get('rolePermission.user_permissions', 'user_permissions')
     public async up() {
         this.schema.createTable(this.tableName, (table) => {
             table.uuid('id').primary()
