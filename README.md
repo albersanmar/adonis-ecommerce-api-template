@@ -1,4 +1,4 @@
-# adonis-api-template
+# Adonis API Template
 
 ### Install modules
 ```
