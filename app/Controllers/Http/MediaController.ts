@@ -138,7 +138,7 @@ export default class MediaController {
             return response.badRequest(error)
         }
     }
-    public async delete({ request, response }) {
+    public async delete({ auth, request, response }) {
         try {
             const { id } = request.params()
             const media = await Media.find(id)
@@ -148,6 +148,18 @@ export default class MediaController {
                     message: 'Archivo no encontrado'
                 })
             }
+
+            let user = await auth.use('api').user
+            user = await User.find(user.id)
+
+            const hasRole = await user.hasRole('cliente')
+            if (hasRole && media.userId !== user.id) {
+                return response.badRequest({
+                    code: "UNAUTHORIZED_ACCESS",
+                    message: "Usuario no autorizado",
+                })
+            }
+
             await media!.delete()
             await Drive.delete(media.fullPath)
             return response.send({
