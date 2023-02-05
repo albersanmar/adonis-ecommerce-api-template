@@ -4,12 +4,16 @@ import {
     beforeCreate,
     beforeSave,
     computed,
+    belongsTo,
+    BelongsTo,
 } from '@ioc:Adonis/Lucid/Orm'
 import { DateTime } from 'luxon'
 import { string } from '@ioc:Adonis/Core/Helpers';
 
-import { v1 as uuidv1 } from "uuid";
+import User from 'App/Models/User';
+
 import S3Service from 'App/Utils/S3Service';
+import { v1 as uuidv1 } from "uuid";
 
 
 export default class Media extends BaseModel {
@@ -29,6 +33,9 @@ export default class Media extends BaseModel {
 
     @column({ serializeAs: 'mimeType' })
     public mimeType: string
+
+    @column({ serializeAs: null })
+    public userId: string
 
     @computed()
     public get url() {
@@ -73,4 +80,7 @@ export default class Media extends BaseModel {
 
         media.fullPath = basePath + fileName
     }
+
+    @belongsTo(() => User)
+    public user: BelongsTo<typeof User>
 }

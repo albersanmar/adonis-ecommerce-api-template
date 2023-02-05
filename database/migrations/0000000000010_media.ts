@@ -13,6 +13,8 @@ export default class MediaSchema extends BaseSchema {
 
             table.timestamp('created_at', { useTz: true }).notNullable()
             table.timestamp('updated_at', { useTz: true }).notNullable()
+
+            table.uuid('user_id').references('id').inTable('users').onDelete('CASCADE')
         })
     }
 

@@ -6,9 +6,10 @@ import { DateTime } from 'luxon'
 import { ErrorReporter } from 'App/Reporters/ErrorReporter';
 import CustomMessages from 'App/Utils/CustomMessages';
 import Media from 'App/Models/Media'
+import User from 'App/Models/User';
 
 export default class MediaController {
-    public async store({ request, response }) {
+    public async store({ auth, request, response }) {
         const customSchema = schema.create({
             file: schema.file({
                 size: '1mb',
@@ -23,6 +24,10 @@ export default class MediaController {
                 messages: CustomMessages,
                 reporter: ErrorReporter
             })
+            let user = await auth.use('api').user
+            user = await User.find(user.id)
+            const hasRoleClient = await user.hasRole('cliente')
+
             const { file, path = '' } = payload
 
             const index = file.clientName.indexOf(`.${file.extname}`)
@@ -30,7 +35,8 @@ export default class MediaController {
             let media = await Media.create({
                 basePath: path,
                 fileName: fileName,
-                mimeType: `${file.type}/${file.subtype}`
+                mimeType: `${file.type}/${file.subtype}`,
+                userId: hasRoleClient ? user.id : undefined
             })
             await file.moveToDisk(media.basePath, {
                 name: media.fileName,
@@ -75,7 +81,7 @@ export default class MediaController {
             return response.badRequest(error)
         }
     }
-    public async update({ request, response }) {
+    public async update({ auth, request, response }) {
         const customSchema = schema.create({
             file: schema.file({
                 size: '1mb',
@@ -95,6 +101,18 @@ export default class MediaController {
                     message: 'Archivo no encontrado'
                 })
             }
+
+            let user = await auth.use('api').user
+            user = await User.find(user.id)
+
+            const hasRole = await user.hasRole('cliente')
+            if (hasRole && media.userId !== user.id) {
+                return response.badRequest({
+                    code: "UNAUTHORIZED_ACCESS",
+                    message: "Usuario no autorizado",
+                })
+            }
+
             await Drive.delete(media.fullPath)
 
             const path = media.basePath
