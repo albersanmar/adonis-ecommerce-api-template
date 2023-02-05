@@ -77,7 +77,6 @@ export default class RoleController {
 
             return response.send({ role: role })
         } catch (error) {
-            // console.log(error)
             if (error.messages?.errors?.length > 0) {
                 return response.badRequest(error.messages.errors[0])
             }

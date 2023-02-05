@@ -64,7 +64,6 @@ export default class Permission extends BaseModel {
     @beforeSave()
     public static async saveSlug(permission: Permission) {
         permission.slug = string.dashCase(permission.name)
-
     }
 
     @hasMany(() => Role)

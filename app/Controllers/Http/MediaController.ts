@@ -52,9 +52,21 @@ export default class MediaController {
         }
 
     }
-    public async show({ response }) {
+    public async show({ auth, response }) {
         try {
-            const media = await Media.all()
+            let user = await auth.use('api').user
+            user = await User.find(user.id)
+            const hasRoleClient = await user.hasRole('cliente')
+
+            let promise
+            if (hasRoleClient) {
+                promise = Media.query()
+                    .where('userId', user.id)
+            } else {
+                promise = Media.all()
+            }
+
+            const media = await promise
             return response.send({ media: media })
         } catch (error) {
             if (error.messages?.errors?.length > 0) {

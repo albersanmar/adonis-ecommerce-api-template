@@ -64,4 +64,12 @@ Route.group(() => {
     Route.delete('/:id', 'MediaController.delete')
     Route.put('/:id', 'MediaController.update')
   }).prefix('media/upload').middleware(['auth', 'is:root,administrador,cliente'])
+  // Categories
+  Route.group(() => {
+    Route.post('/', 'CategoriesController.store')
+    Route.get('/', 'CategoriesController.show')
+    Route.get('/:id', 'CategoriesController.index')
+    Route.delete('/:id', 'CategoriesController.delete')
+    Route.put('/:id', 'CategoriesController.update')
+  }).prefix('categories').middleware(['auth', 'is:root,administrador'])
 }).prefix('api/v1')
