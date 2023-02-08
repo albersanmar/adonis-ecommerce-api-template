@@ -6,7 +6,7 @@ import Role from "App/Models/Role"
 import RolePermission from "App/Models/RolePermission"
 
 export default class RoleController {
-    async index({ response }) {
+    async show({ response }) {
         const roles = await Role.query()
             .preload('permissions')
         return response.send({
@@ -14,7 +14,7 @@ export default class RoleController {
         })
     }
 
-    async show({ request, response }) {
+    async index({ request, response }) {
         const { id } = request.params()
         const role = await Role.query()
             .where('id', id)
@@ -135,7 +135,6 @@ export default class RoleController {
             await role!.merge(data).save()
             if (permissions && permissions.length > 0) {
                 role.related('permissions').detach()
-
                 const rolePermissions: any[] = []
                 permissions.forEach((p) => {
                     rolePermissions.push({

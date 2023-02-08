@@ -5,14 +5,14 @@ import { schema, rules } from '@ioc:Adonis/Core/Validator'
 import Permission from "App/Models/Permission"
 
 export default class PermissionController {
-    async index({ response }) {
+    async show({ response }) {
         const permissions = await Permission.all()
         return response.send({
             permissions: permissions
         })
     }
 
-    async show({ request, response }) {
+    async index({ request, response }) {
         const { id } = request.params()
 
         const permission = await Permission.find(id)

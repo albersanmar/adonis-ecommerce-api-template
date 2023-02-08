@@ -29,15 +29,15 @@ Route.group(() => {
   Route.group(() => {
     Route.post('/', 'PermissionsController.store').middleware('is:root')
     Route.put('/:id', 'PermissionsController.update').middleware('is:root')
-    Route.get('/', 'PermissionsController.index').middleware('is:root,administrador')
-    Route.get('/:id', 'PermissionsController.show').middleware('is:root,administrador')
+    Route.get('/', 'PermissionsController.show').middleware('is:root,administrador')
+    Route.get('/:id', 'PermissionsController.index').middleware('is:root,administrador')
   }).prefix('permissions').middleware(['auth'])
   // Roles
   Route.group(() => {
     Route.post('/', 'RolesController.store').middleware('is:root')
     Route.put('/:id', 'RolesController.update').middleware('is:root')
-    Route.get('/', 'RolesController.index').middleware('is:root,administrador')
-    Route.get('/:id', 'RolesController.show').middleware('is:root,administrador')
+    Route.get('/', 'RolesController.show').middleware('is:root,administrador')
+    Route.get('/:id', 'RolesController.index').middleware('is:root,administrador')
   }).prefix('roles').middleware(['auth'])
   // Auth
   Route.group(() => {
@@ -67,20 +67,33 @@ Route.group(() => {
   // Categories
   Route.group(() => {
     Route.post('/', 'CategoriesController.store')
-    Route.get('/', 'CategoriesController.show')
-    Route.get('/:id', 'CategoriesController.index')
     Route.delete('/:id', 'CategoriesController.delete')
     Route.put('/:id', 'CategoriesController.update')
   }).prefix('categories').middleware(['auth', 'is:root,administrador'])
+  Route.group(() => {
+    Route.get('/', 'CategoriesController.show')
+    Route.get('/:id', 'CategoriesController.index')
+  }).prefix('categories')
   // Commerces
-  /*Route.group(() => {
+  Route.group(() => {
     Route.get('/', 'CommercesController.showMe')
     Route.put('/', 'CommercesController.updateMe')
-  }).prefix('commerces/me').middleware(['auth', 'is:cliente'])*/
+  }).prefix('commerces/me').middleware(['auth', 'is:cliente'])
   Route.group(() => {
     Route.post('/', 'CommercesController.store')
+    Route.put('/:id', 'CommercesController.update')
+  }).prefix('commerces').middleware(['auth', 'is:root,administrador'])
+  Route.group(() => {
     Route.get('/', 'CommercesController.show')
     Route.get('/:id', 'CommercesController.index')
-    Route.put('/:id', 'CommercesController.update')
-  }).prefix('commerces').middleware(['auth', 'is:root,administrador,cliente'])
+  }).prefix('commerces')
+  // Products
+  Route.group(() => {
+    Route.post('/', 'ProductsController.store')
+    Route.put('/:id', 'ProductsController.update')
+  }).prefix('products').middleware(['auth', 'is:root,administrador,cliente'])
+  Route.group(() => {
+    Route.get('/', 'ProductsController.show')
+    Route.get('/:id', 'ProductsController.index')
+  }).prefix('products')
 }).prefix('api/v1')

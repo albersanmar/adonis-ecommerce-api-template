@@ -159,8 +159,22 @@ export default class RoleController {
     }
     async showMe({ auth, response }) {
         try {
-            const user = await User.find(await auth.use('api').user.id)
-            const commerce = await Commerce.query()
+            let commerce
+            let user: User = await auth.use('api').user
+            user = await User.query()
+                .where('id', user.id)
+                .preload('profile')
+                .first() as User
+            if (!user!.commerceId) {
+                commerce = await Commerce.create({
+                    name: user!.profile.fullName,
+                    description: '',
+                })
+                await user.merge({
+                    commerceId: commerce.id
+                }).save()
+            }
+            commerce = await Commerce.query()
                 .where('id', user!.commerceId)
                 .preload('user')
                 .preload('media')
