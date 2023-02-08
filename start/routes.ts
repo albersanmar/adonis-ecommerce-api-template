@@ -72,4 +72,15 @@ Route.group(() => {
     Route.delete('/:id', 'CategoriesController.delete')
     Route.put('/:id', 'CategoriesController.update')
   }).prefix('categories').middleware(['auth', 'is:root,administrador'])
+  // Commerces
+  /*Route.group(() => {
+    Route.get('/', 'CommercesController.showMe')
+    Route.put('/', 'CommercesController.updateMe')
+  }).prefix('commerces/me').middleware(['auth', 'is:cliente'])*/
+  Route.group(() => {
+    Route.post('/', 'CommercesController.store')
+    Route.get('/', 'CommercesController.show')
+    Route.get('/:id', 'CommercesController.index')
+    Route.put('/:id', 'CommercesController.update')
+  }).prefix('commerces').middleware(['auth', 'is:root,administrador,cliente'])
 }).prefix('api/v1')

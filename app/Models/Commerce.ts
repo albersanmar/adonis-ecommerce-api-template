@@ -11,11 +11,14 @@ import { DateTime } from 'luxon'
 import { string } from '@ioc:Adonis/Core/Helpers';
 
 import Media from 'App/Models/Media';
+import User from 'App/Models/User';
 
 import { v1 as uuidv1 } from "uuid";
 
 
-export default class Category extends BaseModel {
+export default class Commerce extends BaseModel {
+    public static table = 'commerces'
+
     @column({
         isPrimary: true,
     })
@@ -30,11 +33,14 @@ export default class Category extends BaseModel {
     @column()
     public description: string
 
-    @column({ serializeAs: null })
-    public parentCategoryId: string
+    @column({ serialize: Boolean, serializeAs: null })
+    public belongsAdmin: boolean
 
     @column({ serializeAs: null })
     public mediaId: string
+
+    @column({ serializeAs: null })
+    public userId: string
 
     @column.dateTime({
         autoCreate: true,
@@ -56,24 +62,22 @@ export default class Category extends BaseModel {
     public updatedAt: DateTime
 
     @beforeCreate()
-    public static async assignId(category: Category) {
-        if (!category.id) {
-            category.id = uuidv1()
+    public static async assignId(commerce: Commerce) {
+        if (!commerce.id) {
+            commerce.id = uuidv1()
         }
     }
 
     @beforeSave()
-    public static async saveSlug(category: Category) {
-        if (category.$dirty.name) {
-            category.slug = string.dashCase(category.name.normalize('NFD').replace(/[\u0300-\u036f]/g, ''))
+    public static async saveSlug(commerce: Commerce) {
+        if (commerce.$dirty.name) {
+            commerce.slug = string.dashCase(commerce.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '')) + '-' + DateTime.now().toMillis()
         }
     }
 
-    @belongsTo(() => Category, {
-        foreignKey: 'parentCategoryId'
-    })
-    public parentCategory: BelongsTo<typeof Category>
-
     @belongsTo(() => Media)
     public media: BelongsTo<typeof Media>
+
+    @belongsTo(() => User)
+    public user: BelongsTo<typeof User>
 }

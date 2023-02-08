@@ -8,13 +8,9 @@ export default class RoleController {
         const customSchema = schema.create({
             name: schema.string({ trim: true }, [
                 rules.unique({ table: 'categories', column: 'name' }),
-                rules.minLength(3),
-                rules.maxLength(32),
                 rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
             ]),
             description: schema.string.optional({ trim: true }, [
-                rules.minLength(3),
-                rules.maxLength(32),
                 rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
             ]),
             parentCategoryId: schema.string.optional({ trim: true }, [
@@ -50,8 +46,6 @@ export default class RoleController {
     async update({ request, response }) {
         const customSchema = schema.create({
             name: schema.string.optional({ trim: true }, [
-                rules.minLength(3),
-                rules.maxLength(32),
                 rules.regex(/^[a-zA-ZÁÉÍÓÚáéíóúñÑ ]*$/gm)
             ]),
             description: schema.string.optional({ trim: true }, [
@@ -117,15 +111,22 @@ export default class RoleController {
             return response.badRequest(error)
         }
     }
-    async show({ response }) {
+    async show({ request, response }) {
         try {
-            const categories = await Category.query()
+            const { slug } = request.all()
+
+            let promise = Category.query()
+
+            if (slug) promise = promise.where('slug', slug)
+
+            const categories = await promise
                 .preload('parentCategory')
                 .preload('media')
             return response.send({
                 categories: categories
             })
         } catch (error) {
+            console.log(error)
             if (error.messages?.errors?.length > 0) {
                 return response.badRequest(error.messages.errors[0])
             }
