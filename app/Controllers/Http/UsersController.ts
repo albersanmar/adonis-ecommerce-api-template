@@ -11,7 +11,7 @@ import CustomMessages from 'App/Utils/CustomMessages';
 import { string } from '@ioc:Adonis/Core/Helpers'
 
 export default class UsersController {
-  public async create({ request, response }) {
+  public async store({ request, response }) {
     const customSchema = schema.create({
       email: schema.string({ trim: true }, [
         rules.email(),

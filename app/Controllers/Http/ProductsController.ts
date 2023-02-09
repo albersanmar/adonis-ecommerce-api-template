@@ -8,26 +8,46 @@ import CategoryProduct from 'App/Models/CategoryProduct';
 import MediaProduct from 'App/Models/MediaProduct';
 
 export default class ProductController {
-    async show({ response }) {
-        const products = await Product.query()
+    async show({ auth, response }) {
+        let promise = Product.query()
             .preload('user')
             .preload('commerce')
             .preload('categories')
             .preload('gallery')
-            .first() as Product
+        try {
+            await auth.use('api').authenticate()
+            const user = await auth.use('api').user
+            promise = promise.preload('favoriteUsersAttached', (query) => {
+                query.where('user_id', user.id)
+            })
+        } catch { }
+        let products: any[] = await promise
+        products = products!.map((p) => ({
+            ...p.serialize(),
+            favoriteUsersAttached: undefined,
+            isFavorite: p.favoriteUsersAttached ? p.favoriteUsersAttached.length > 0 : undefined
+        }))
         return response.send({
             products: products
         })
     }
-    async index({ request, response }) {
+    async index({ auth, request, response }) {
         const { id } = request.params()
-        const product = await Product.query()
+        let promise = Product.query()
             .where('id', id)
             .preload('user')
             .preload('commerce')
             .preload('categories')
             .preload('gallery')
-            .first() as Product
+        try {
+            await auth.use('api').authenticate()
+            const user = await auth.use('api').user
+            promise = promise.preload('favoriteUsersAttached', (query) => {
+                query.where('user_id', user.id)
+            })
+        } catch { }
+        const product: any = await promise
+            .first()
         if (!product) {
             return response.badRequest({
                 code: 'PRODUCT_NOT_FOUND',
@@ -35,7 +55,11 @@ export default class ProductController {
             })
         }
         return response.send({
-            product: product
+            product: {
+                ...product.serialize(),
+                favoriteUsersAttached: undefined,
+                isFavorite: product.favoriteUsersAttached ? product.favoriteUsersAttached.length > 0 : undefined
+            }
         })
     }
     async store({ auth, request, response }) {

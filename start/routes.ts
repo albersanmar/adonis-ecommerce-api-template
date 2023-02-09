@@ -50,7 +50,12 @@ Route.group(() => {
   }).prefix('auth').middleware(['auth'])
   // Users
   Route.group(() => {
-    Route.post('/', 'UsersController.create').middleware('is:root,administrador')
+    Route.group(() => {
+      Route.get('/', 'UserFavoriteProductsController.show')
+      Route.post('/attach', 'UserFavoriteProductsController.store')
+      Route.delete('/detach', 'UserFavoriteProductsController.delete')
+    }).prefix('favorite/products').middleware('is:cliente')
+    Route.post('/', 'UsersController.store').middleware('is:root,administrador')
     Route.put('/:id', 'UsersController.update').middleware('is:root,administrador,cliente')
     Route.get('/', 'UsersController.show')
     Route.get('/me', 'UsersController.me')

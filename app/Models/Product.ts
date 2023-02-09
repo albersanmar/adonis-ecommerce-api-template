@@ -94,4 +94,9 @@ export default class Product extends BaseModel {
         pivotTable: 'category_products'
     })
     public categories: ManyToMany<typeof Category>
+
+    @manyToMany(() => User, {
+        pivotTable: 'user_favorite_products'
+    })
+    public favoriteUsersAttached: ManyToMany<typeof User>
 }

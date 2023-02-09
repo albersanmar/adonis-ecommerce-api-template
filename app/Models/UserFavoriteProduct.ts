@@ -9,17 +9,17 @@ import {
 import { DateTime } from 'luxon'
 import { v1 as uuidv1 } from "uuid";
 
-import Category from 'App/Models/Category';
+import User from 'App/Models/User';
 import Product from 'App/Models/Product';
 
-export default class CategoryProduct extends BaseModel {
+export default class UserFavoriteProduct extends BaseModel {
     @column({
         isPrimary: true,
     })
     public id: string
 
-    @column({ serializeAs: 'categoryId' })
-    public categoryId: string
+    @column({ serializeAs: 'userId' })
+    public userId: string
 
     @column({ serializeAs: 'productId' })
     public productId: string
@@ -44,14 +44,14 @@ export default class CategoryProduct extends BaseModel {
     public updatedAt: DateTime
 
     @beforeCreate()
-    public static async assignId(categoryProduct: CategoryProduct) {
-        if (!categoryProduct.id) {
-            categoryProduct.id = uuidv1()
+    public static async assignId(userFavoriteProduct: UserFavoriteProduct) {
+        if (!userFavoriteProduct.id) {
+            userFavoriteProduct.id = uuidv1()
         }
     }
 
-    @belongsTo(() => Category)
-    public category: BelongsTo<typeof Category>
+    @belongsTo(() => User)
+    public user: BelongsTo<typeof User>
 
     @belongsTo(() => Product)
     public product: BelongsTo<typeof Product>
