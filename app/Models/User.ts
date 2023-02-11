@@ -51,6 +51,9 @@ export default class User extends BaseModel {
   @column({ serializeAs: null })
   public commerceId: string
 
+  @column({ serializeAs: null })
+  public cartId: string
+
   @column.dateTime({
     autoCreate: true,
     serializeAs: 'createdAt',

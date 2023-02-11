@@ -101,4 +101,10 @@ Route.group(() => {
     Route.get('/', 'ProductsController.show')
     Route.get('/:id', 'ProductsController.index')
   }).prefix('products')
+  // Cart
+  Route.group(() => {
+    Route.get('/', 'CartsController.show')
+    Route.post('/attach', 'CartsController.store')
+    Route.delete('/detach', 'CartsController.delete')
+  }).prefix('carts')
 }).prefix('api/v1')
