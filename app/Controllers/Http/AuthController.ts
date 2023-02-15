@@ -94,11 +94,7 @@ export default class AuthController {
             email: schema.string({ trim: true }, [
                 rules.email(),
             ]),
-            password: schema.string([
-                rules.minLength(8),
-                rules.maxLength(32),
-                rules.regex(/^[a-z\d\-_\s#$!]+$/i)
-            ]),
+            password: schema.string([]),
         })
 
         try {
